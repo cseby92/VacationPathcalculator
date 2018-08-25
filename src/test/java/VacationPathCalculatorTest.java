@@ -1,8 +1,7 @@
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 /**
  * This class is for unit testing the VacationPathCalculator class.
  * <p>
@@ -11,11 +10,6 @@ import static org.mockito.Mockito.mock;
 public class VacationPathCalculatorTest {
 
     private VacationPathCalculator calculator = new VacationPathCalculator();
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
     @Test
     public void testForEmptyInput() throws VacationPathCalculatorException {
         assertEquals("Should return empty string for empty input","", calculator.calculateOptimalPath(""));
@@ -72,8 +66,4 @@ public class VacationPathCalculatorTest {
     public void testForBadInputWithMultipleCharactersInOneStatement() throws VacationPathCalculatorException {
         String path = calculator.calculateOptimalPath("u =>\nv => w\nw => z\nx y z => u\ny => v\nz =>");
     }
-
-    //TODO: write tests for circular dependencies like: b -> a; a -> b ...
-    //TODO: Or b -> a; c -> b; a -> v
-
 }

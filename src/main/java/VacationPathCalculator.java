@@ -15,17 +15,16 @@ public class VacationPathCalculator {
     private final String LINE_SEPARATOR = "\\r?\\n";
     private final String DEPENDENCY_SEPARATOR = "=>";
     private final String INPUT_VALIDATOR_REGEXP = "(. =>\n|. => .\n)+(. =>|. => .)|(. =>)";
-    private List<String> resultPath = new ArrayList();
-
+    private final String OUTPUT_DELIMITER = ", ";
+    private List<String> resultPath;
     /**
      * Calculates the preferred path.
      * <p>
      * @param inputDirections input directions as a String delimited by end line characters
      * @return the directions in optimal order as a String
-     * @throws VacationPathCalculatorException
+     * @throws VacationPathCalculatorException throws a custom exception if the input is wrong
      */
     public String calculateOptimalPath(String inputDirections) throws VacationPathCalculatorException {
-        //TODO: throw exception for circular dependencies
         if(hasNoDirections(inputDirections)) {
             return "";
         }
@@ -36,34 +35,7 @@ public class VacationPathCalculator {
         }
         resultPath = new ArrayList<>();
         allDirections.forEach(this::addDirectionsToResultPath);
-        return String.join(", ", resultPath);
-    }
-
-    private void addDirectionsToResultPath(String directions) {
-        if(hasNoDependency(directions)) {
-            String singleDirection = getSingleDirection(directions);
-            if(doesNotContain(resultPath, singleDirection)) {
-                resultPath.add(getSingleDirection(directions));
-            }
-        } else {
-            addMultipleDependenciesToResultPath(directions);
-        }
-    }
-
-    private void addMultipleDependenciesToResultPath(String directions) {
-        List<String> directionsInOrder = getMultipleDirections(directions);
-        String firstDirection = directionsInOrder.get(0).trim();
-        String secondDirection = directionsInOrder.get(1).trim();
-        if(isBothDirectionsNotPresent(resultPath, firstDirection, secondDirection)) {
-            resultPath.add(firstDirection);
-            resultPath.add(secondDirection);
-        } else if(doesNotContain(resultPath, firstDirection)) {
-            int indexOfDirection = resultPath.indexOf(secondDirection);
-            resultPath.add(indexOfDirection, firstDirection);
-        } else if(doesNotContain(resultPath, secondDirection)) {
-            int indexOfDirection = resultPath.indexOf(firstDirection);
-            resultPath.add(indexOfDirection + 1, secondDirection);
-        }
+        return String.join(OUTPUT_DELIMITER, resultPath);
     }
 
     private boolean hasNoDirections(String inputDirections) {
@@ -87,13 +59,52 @@ public class VacationPathCalculator {
     }
 
     private List<String> getMultipleDirections(String directions) {
-        List<String> list = new ArrayList(Arrays.asList(directions.split(DEPENDENCY_SEPARATOR)));
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(directions.split(DEPENDENCY_SEPARATOR)));
         Collections.reverse(list);
         return list;
     }
 
     private boolean isBothDirectionsNotPresent(List<String> resultPath, String directionOne, String directionTwo) {
         return doesNotContain(resultPath, directionOne) && doesNotContain(resultPath, directionTwo);
+    }
+
+    private void addDirectionsToResultPath(String directions) {
+        if (hasNoDependency(directions)) {
+            String singleDirection = getSingleDirection(directions);
+            if (doesNotContain(resultPath, singleDirection)) {
+                resultPath.add(getSingleDirection(directions));
+            }
+        } else {
+            addMultipleDependenciesToResultPath(directions);
+        }
+    }
+
+    private void addMultipleDependenciesToResultPath(String directions) {
+        List<String> directionsInOrder = getMultipleDirections(directions);
+        String firstDirection = directionsInOrder.get(0).trim();
+        String secondDirection = directionsInOrder.get(1).trim();
+        if (isBothDirectionsNotPresent(resultPath, firstDirection, secondDirection)) {
+            appendBothDirectionsAtTheEnd(firstDirection, secondDirection);
+        } else if (doesNotContain(resultPath, firstDirection)) {
+            appendBeforeSecondDirection(firstDirection, secondDirection);
+        } else if (doesNotContain(resultPath, secondDirection)) {
+            appendAfterFirstDirection(firstDirection, secondDirection);
+        }
+    }
+
+    private void appendBothDirectionsAtTheEnd(String firstDirection, String secondDirection) {
+        resultPath.add(firstDirection);
+        resultPath.add(secondDirection);
+    }
+
+    private void appendBeforeSecondDirection(String firstDirection, String secondDirection) {
+        int indexOfDirection = resultPath.indexOf(secondDirection);
+        resultPath.add(indexOfDirection, firstDirection);
+    }
+
+    private void appendAfterFirstDirection(String firstDirection, String secondDirection) {
+        int indexOfDirection = resultPath.indexOf(firstDirection);
+        resultPath.add(indexOfDirection + 1, secondDirection);
     }
 
     private void validateInput(String inputDirections) throws VacationPathCalculatorException{
