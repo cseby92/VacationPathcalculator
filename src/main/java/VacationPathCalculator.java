@@ -5,18 +5,28 @@ import java.util.List;
 
 /**
  * This class calculates the optimal path for a given input pof locations,
- * based on their given dependencies
+ * based on their given dependencies.
  * <p>
+ * The algorithm basically starts with an empty array and inserts elements into it
+ * based on the following rules:
+ * <br>
+ * i.) If it is a single element and the list does not contain it, then inserts it into the end of the list.
+ * <br>
+ * ii.) If it is a dependent element there are three options:
+ * <br>
+ * -If both are non existent in the list, then it inserts both at the end of the list.
+ * <br>
+ * -If the first element is in the list, then it insert after that and shifts the remaining elements.
+ * <br>
+ * -If the second element is in the list, then it inserts before that and shifts the remaining elements.
+ *
  * @author cseby92@gmail.com
  */
 
 public class VacationPathCalculator {
-
-    private final String LINE_SEPARATOR = "\\r?\\n";
     private final String DEPENDENCY_SEPARATOR = "=>";
-    private final String INPUT_VALIDATOR_REGEXP = "(. =>\n|. => .\n)+(. =>|. => .)|(. =>)";
-    private final String OUTPUT_DELIMITER = ", ";
     private List<String> resultPath;
+
     /**
      * Calculates the preferred path.
      * <p>
@@ -29,12 +39,14 @@ public class VacationPathCalculator {
             return "";
         }
         validateInput(inputDirections);
+        String LINE_SEPARATOR = "\\r?\\n";
         List<String> allDirections = Arrays.asList(inputDirections.split(LINE_SEPARATOR));
         if(hasOnlyOneDirection(allDirections)) {
             return getSingleDirection(allDirections.get(0));
         }
         resultPath = new ArrayList<>();
         allDirections.forEach(this::addDirectionsToResultPath);
+        String OUTPUT_DELIMITER = ", ";
         return String.join(OUTPUT_DELIMITER, resultPath);
     }
 
@@ -108,6 +120,7 @@ public class VacationPathCalculator {
     }
 
     private void validateInput(String inputDirections) throws VacationPathCalculatorException{
+        String INPUT_VALIDATOR_REGEXP = "(. =>\n|. => .\n)+(. =>|. => .)|(. =>)";
         if(!inputDirections.matches(INPUT_VALIDATOR_REGEXP)) {
             throw new VacationPathCalculatorException(String.format("Invalid input format for: \n %s", inputDirections));
         }
